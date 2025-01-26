@@ -1,10 +1,11 @@
-**Cheatsheet completo de Kubernetes**, que incluye tanto los comandos básicos.
+
 
 ---
 
-## **Cheatsheet completo de Kubernetes**
-
+**Cheatsheet completo de Kubernetes**, que incluye los comandos básicos.
 ---
+
+<img src="https://static-00.iconduck.com/assets.00/kubernetes-icon-2048x1995-r1q3f8n7.png" alt="Imagen de ejemplo" width="300" height="300">
 
 ### **Conceptos básicos**
 - **Pod**: La unidad más pequeña en Kubernetes, que puede contener uno o más contenedores.
