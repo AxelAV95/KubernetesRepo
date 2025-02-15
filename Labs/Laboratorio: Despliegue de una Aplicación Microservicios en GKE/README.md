@@ -280,6 +280,24 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      ```sh
      gcloud container clusters delete my-cluster --zone us-central1-a
      ```
+# Extras
+
+### Habilitar Horizontal Pod Autoscaler (HPA)
+Antes de hacer una prueba de carga, asegúrate de que tu aplicación está configurada para escalar automáticamente. Kubernetes tiene un recurso llamado Horizontal Pod Autoscaler (HPA) que ajusta el número de réplicas de un pod en función de métricas como la CPU y la memoria.
+
+Pasos para configurar el HPA:
+- Instalar el HPA: Si ya tienes un deployment de tu aplicación, puedes habilitar el autoscaling por CPU con el siguiente comando:
+```sh
+   kubectl autoscale deployment frontend --cpu-percent=50 --min=1 --max=10
+```
+Esto significa que Kubernetes ajustará el número de réplicas entre 1 y 10 dependiendo de la carga de CPU.
+
+- Verificar el HPA: Puedes verificar si el HPA está funcionando correctamente con:
+
+     ```sh
+     kubectl get hpa
+     ```
+- Monitorear el escalado: A medida que generas carga en tu aplicación, Kubernetes debería aumentar o disminuir el número de réplicas según la carga.
 
 ### Pruebas de carga con Artillery
 
