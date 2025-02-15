@@ -1,5 +1,10 @@
 FROM nginx:alpine
 COPY . /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+
+# FROM nginx:alpine
+# COPY . /usr/share/nginx/html
 
 # FROM nginx:alpine
 
