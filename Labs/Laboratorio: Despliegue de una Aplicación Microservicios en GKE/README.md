@@ -281,3 +281,13 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      gcloud container clusters delete my-cluster --zone us-central1-a
      ```
 
+### Pruebas de carga con Artillery
+
+Artillery es una herramienta ligera y fácil de usar para realizar pruebas de carga y de rendimiento en aplicaciones web. Puedes instalarla y ejecutarla con un archivo de configuración sencillo:
+
+  ```sh
+npm install -g artillery
+artillery quick --count 100 -n 10 http://your-service-url
+  ```
+Esto enviará 100 solicitudes concurrentes a tu URL durante 10 segundos.
+
