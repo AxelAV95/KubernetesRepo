@@ -1,0 +1,268 @@
+
+### Laboratorio: Despliegue de una aplicación microservicios en GKE
+
+#### Objetivo:
+Desplegar una aplicación basada en microservicios en un clúster de Kubernetes en GKE.
+
+#### Requisitos Previos:
+1. Cuenta de Google Cloud Platform (GCP).
+2. Google Cloud SDK instalado y configurado.
+3. Docker instalado en tu máquina local.
+4. kubectl instalado y configurado.
+
+### Paso 1: Configurar el Entorno de GCP
+
+1. **Crear un Proyecto en GCP:**
+   - Accede a la consola de GCP y crea un nuevo proyecto.
+   - Anota el ID del proyecto.
+
+2. **Habilitar las APIs Necesarias:**
+   - Habilita las siguientes APIs en tu proyecto:
+     - Kubernetes Engine API
+     - Compute Engine API
+     - Container Registry API
+
+3. **Configurar Google Cloud SDK:**
+   - Abre una terminal y autentícate con tu cuenta de GCP:
+     ```sh
+     gcloud auth login
+     ```
+   - Establece el proyecto predeterminado:
+     ```sh
+     gcloud config set project [PROJECT_ID]
+     ```
+
+### Paso 2: Crear un Clúster de GKE
+
+1. **Crear un Clúster de GKE:**
+   - Crea un clúster de GKE con 3 nodos:
+     ```sh
+     gcloud container clusters create my-cluster --num-nodes=3 --zone us-central1-a
+     ```
+   - Configura `kubectl` para usar el clúster recién creado:
+     ```sh
+     gcloud container clusters get-credentials my-cluster --zone us-central1-a
+     ```
+
+### Paso 3: Crear Microservicios
+
+1. **Crear un Microservicio de Backend:**
+   - Crea un directorio para tu microservicio de backend:
+     ```sh
+     mkdir backend
+     cd backend
+     ```
+   - Crea un archivo `Dockerfile`:
+     ```Dockerfile
+     FROM python:3.8-slim
+     WORKDIR /app
+     COPY . /app
+     RUN pip install flask
+     CMD ["python", "app.py"]
+     ```
+   - Crea un archivo `app.py`:
+     ```python
+     from flask import Flask, jsonify
+     app = Flask(__name__)
+     @app.route('/api', methods=['GET'])
+     def api():
+         return jsonify({'message': 'Hello from backend!'})
+     if __name__ == '__main__':
+         app.run(host='0.0.0.0', port=5000)
+     ```
+   - Construye y sube la imagen a Google Container Registry:
+     ```sh
+     docker build -t gcr.io/[PROJECT_ID]/backend:v1 .
+     docker push gcr.io/[PROJECT_ID]/backend:v1
+     ```
+
+2. **Crear un Microservicio de Frontend:**
+   - Crea un directorio para tu microservicio de frontend:
+     ```sh
+     cd ..
+     mkdir frontend
+     cd frontend
+     ```
+   - Crea un archivo `Dockerfile`:
+     ```Dockerfile
+     FROM nginx:alpine
+     COPY . /usr/share/nginx/html
+     COPY nginx.conf /etc/nginx/nginx.conf
+     ```
+   - Crea un archivo `index.html`:
+     ```html
+     <!DOCTYPE html>
+     <html>
+     <head>
+         <title>Frontend</title>
+     </head>
+     <body>
+         <h1>Hello from frontend!</h1>
+         <button onclick="fetchData()">Fetch Data from Backend</button>
+         <p id="data"></p>
+         <script>
+             function fetchData() {
+                 fetch('/api')
+                     .then(response => response.json())
+                     .then(data => document.getElementById('data').innerText = data.message);
+             }
+         </script>
+     </body>
+     </html>
+     ```
+   - Crea un archivo `nginx.conf`:
+     ```nginx
+     server {
+         listen 80;
+
+         location / {
+             root /usr/share/nginx/html;
+             index index.html index.htm;
+             try_files $uri $uri/ /index.html;
+         }
+
+         location /api {
+             proxy_pass http://backend;
+             proxy_set_header Host $host;
+             proxy_set_header X-Real-IP $remote_addr;
+             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+             proxy_set_header X-Forwarded-Proto $scheme;
+         }
+     }
+     ```
+   - Construye y sube la imagen a Google Container Registry:
+     ```sh
+     docker build -t gcr.io/[PROJECT_ID]/frontend:v1 .
+     docker push gcr.io/[PROJECT_ID]/frontend:v1
+     ```
+
+### Paso 4: Desplegar Microservicios en GKE
+
+1. **Desplegar el Microservicio de Backend:**
+   - Crea un archivo `backend-deployment.yaml`:
+     ```yaml
+     apiVersion: apps/v1
+     kind: Deployment
+     metadata:
+       name: backend
+     spec:
+       replicas: 3
+       selector:
+         matchLabels:
+           app: backend
+       template:
+         metadata:
+           labels:
+             app: backend
+         spec:
+           containers:
+           - name: backend
+             image: gcr.io/[PROJECT_ID]/backend:v1
+             ports:
+             - containerPort: 5000
+     ```
+   - Aplica el archivo de despliegue:
+     ```sh
+     kubectl apply -f backend-deployment.yaml
+     ```
+
+2. **Desplegar el Microservicio de Frontend:**
+   - Crea un archivo `frontend-deployment.yaml`:
+     ```yaml
+     apiVersion: apps/v1
+     kind: Deployment
+     metadata:
+       name: frontend
+     spec:
+       replicas: 3
+       selector:
+         matchLabels:
+           app: frontend
+       template:
+         metadata:
+           labels:
+             app: frontend
+         spec:
+           containers:
+           - name: frontend
+             image: gcr.io/[PROJECT_ID]/frontend:v1
+             ports:
+             - containerPort: 80
+     ```
+   - Aplica el archivo de despliegue:
+     ```sh
+     kubectl apply -f frontend-deployment.yaml
+     ```
+
+### Paso 5: Configurar el Servicio y el Balanceo de Carga
+
+1. **Crear un Servicio para el Backend:**
+   - Crea un archivo `backend-service.yaml`:
+     ```yaml
+     apiVersion: v1
+     kind: Service
+     metadata:
+       name: backend
+     spec:
+       selector:
+         app: backend
+       ports:
+         - protocol: TCP
+           port: 80
+           targetPort: 5000
+       type: ClusterIP
+     ```
+   - Aplica el archivo de servicio:
+     ```sh
+     kubectl apply -f backend-service.yaml
+     ```
+
+2. **Crear un Servicio para el Frontend:**
+   - Crea un archivo `frontend-service.yaml`:
+     ```yaml
+     apiVersion: v1
+     kind: Service
+     metadata:
+       name: frontend
+     spec:
+       selector:
+         app: frontend
+       ports:
+         - protocol: TCP
+           port: 80
+           targetPort: 80
+       type: LoadBalancer
+     ```
+   - Aplica el archivo de servicio:
+     ```sh
+     kubectl apply -f frontend-service.yaml
+     ```
+
+3. **Obtener la Dirección IP del Load Balancer:**
+   - Verifica el estado del servicio de frontend y obtén la dirección IP externa:
+     ```sh
+     kubectl get services
+     ```
+   - Una vez que la columna `EXTERNAL-IP` tenga una dirección IP, accede a ella en tu navegador para ver la aplicación en funcionamiento.
+
+### Paso 6: Verificar el Despliegue
+
+1. **Acceder a la Aplicación:**
+   - Abre un navegador y navega a la dirección IP externa del servicio de frontend.
+   - Haz clic en el botón "Fetch Data from Backend" para verificar que el frontend puede comunicarse con el backend.
+
+### Paso 7: Limpieza
+
+1. **Eliminar los Recursos:**
+   - Elimina los despliegues y servicios:
+     ```sh
+     kubectl delete -f frontend-service.yaml
+     kubectl delete -f backend-service.yaml
+     kubectl delete -f frontend-deployment.yaml
+     kubectl delete -f backend-deployment.yaml
+     ```
+   - Elimina el clúster de GKE:
+     ```sh
+     gcloud container clusters delete my-cluster --zone us-central1-a
+     ```
+
