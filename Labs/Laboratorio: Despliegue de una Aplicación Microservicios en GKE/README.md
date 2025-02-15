@@ -31,6 +31,10 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      ```sh
      gcloud config set project [PROJECT_ID]
      ```
+   - Verificar que regiones se permite usar en un proyecto
+    ```sh
+      gcloud org-policies describe constraints/gcp.resourceLocations --project  [PROJECT_ID]
+    ```
 
 ### Paso 2: Crear un Clúster de GKE
 
@@ -112,23 +116,29 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      ```
    - Crea un archivo `nginx.conf`:
      ```nginx
-     server {
-         listen 80;
-
-         location / {
-             root /usr/share/nginx/html;
-             index index.html index.htm;
-             try_files $uri $uri/ /index.html;
-         }
-
-         location /api {
-             proxy_pass http://backend;
-             proxy_set_header Host $host;
-             proxy_set_header X-Real-IP $remote_addr;
-             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-             proxy_set_header X-Forwarded-Proto $scheme;
-         }
+     events {
+          worker_connections 1024;
      }
+
+     http {
+       server {
+           listen 80;
+
+           location / {
+               root /usr/share/nginx/html;
+               index index.html index.htm;
+               try_files $uri $uri/ /index.html;
+           }
+
+           location /api {
+               proxy_pass http://backend;
+               proxy_set_header Host $host;
+               proxy_set_header X-Real-IP $remote_addr;
+               proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+               proxy_set_header X-Forwarded-Proto $scheme;
+           }
+       }
+      }
      ```
    - Construye y sube la imagen a Google Container Registry:
      ```sh
@@ -247,13 +257,18 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
 
 ### Paso 6: Verificar el Despliegue
 
-1. **Acceder a la Aplicación:**
+1. **Acceder a la aplicación:**
    - Abre un navegador y navega a la dirección IP externa del servicio de frontend.
    - Haz clic en el botón "Fetch Data from Backend" para verificar que el frontend puede comunicarse con el backend.
 
 ### Paso 7: Limpieza
 
-1. **Eliminar los Recursos:**
+**Para verificar Logs de un pod, usar:**
+  ```sh
+    kubectl logs [POD-ID] --previous
+   ```
+
+1. **Eliminar los recursos:**
    - Elimina los despliegues y servicios:
      ```sh
      kubectl delete -f frontend-service.yaml
