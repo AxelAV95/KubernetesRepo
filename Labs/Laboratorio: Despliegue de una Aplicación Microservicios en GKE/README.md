@@ -4,19 +4,19 @@
 #### Objetivo:
 Desplegar una aplicación basada en microservicios en un clúster de Kubernetes en GKE.
 
-#### Requisitos Previos:
+#### Requisitos previos:
 1. Cuenta de Google Cloud Platform (GCP).
 2. Google Cloud SDK instalado y configurado.
 3. Docker instalado en tu máquina local.
 4. kubectl instalado y configurado.
 
-### Paso 1: Configurar el Entorno de GCP
+### Paso 1: Configurar el entorno de GCP
 
-1. **Crear un Proyecto en GCP:**
+1. **Crear un proyecto en GCP:**
    - Accede a la consola de GCP y crea un nuevo proyecto.
    - Anota el ID del proyecto.
 
-2. **Habilitar las APIs Necesarias:**
+2. **Habilitar las APIs necesarias:**
    - Habilita las siguientes APIs en tu proyecto:
      - Kubernetes Engine API
      - Compute Engine API
@@ -36,7 +36,7 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
       gcloud org-policies describe constraints/gcp.resourceLocations --project  [PROJECT_ID]
     ```
 
-### Paso 2: Crear un Clúster de GKE
+### Paso 2: Crear un clúster de GKE
 
 1. **Crear un Clúster de GKE:**
    - Crea un clúster de GKE con 3 nodos:
@@ -48,9 +48,9 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      gcloud container clusters get-credentials my-cluster --zone us-central1-a
      ```
 
-### Paso 3: Crear Microservicios
+### Paso 3: Crear microservicios
 
-1. **Crear un Microservicio de Backend:**
+1. **Crear un microservicio de Backend:**
    - Crea un directorio para tu microservicio de backend:
      ```sh
      mkdir backend
@@ -80,7 +80,7 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      docker push gcr.io/[PROJECT_ID]/backend:v1
      ```
 
-2. **Crear un Microservicio de Frontend:**
+2. **Crear un microservicio de Frontend:**
    - Crea un directorio para tu microservicio de frontend:
      ```sh
      cd ..
@@ -146,9 +146,9 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      docker push gcr.io/[PROJECT_ID]/frontend:v1
      ```
 
-### Paso 4: Desplegar Microservicios en GKE
+### Paso 4: Desplegar microservicios en GKE
 
-1. **Desplegar el Microservicio de Backend:**
+1. **Desplegar el microservicio de Backend:**
    - Crea un archivo `backend-deployment.yaml`:
      ```yaml
      apiVersion: apps/v1
@@ -176,7 +176,7 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      kubectl apply -f backend-deployment.yaml
      ```
 
-2. **Desplegar el Microservicio de Frontend:**
+2. **Desplegar el microservicio de Frontend:**
    - Crea un archivo `frontend-deployment.yaml`:
      ```yaml
      apiVersion: apps/v1
@@ -204,7 +204,7 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      kubectl apply -f frontend-deployment.yaml
      ```
 
-### Paso 5: Configurar el Servicio y el Balanceo de Carga
+### Paso 5: Configurar el servicio y el balanceo de Carga
 
 1. **Crear un Servicio para el Backend:**
    - Crea un archivo `backend-service.yaml`:
@@ -227,7 +227,7 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      kubectl apply -f backend-service.yaml
      ```
 
-2. **Crear un Servicio para el Frontend:**
+2. **Crear un servicio para el Frontend:**
    - Crea un archivo `frontend-service.yaml`:
      ```yaml
      apiVersion: v1
@@ -248,14 +248,14 @@ Desplegar una aplicación basada en microservicios en un clúster de Kubernetes 
      kubectl apply -f frontend-service.yaml
      ```
 
-3. **Obtener la Dirección IP del Load Balancer:**
+3. **Obtener la dirección IP del Load Balancer:**
    - Verifica el estado del servicio de frontend y obtén la dirección IP externa:
      ```sh
      kubectl get services
      ```
    - Una vez que la columna `EXTERNAL-IP` tenga una dirección IP, accede a ella en tu navegador para ver la aplicación en funcionamiento.
 
-### Paso 6: Verificar el Despliegue
+### Paso 6: Verificar el despliegue
 
 1. **Acceder a la aplicación:**
    - Abre un navegador y navega a la dirección IP externa del servicio de frontend.
@@ -290,4 +290,42 @@ npm install -g artillery
 artillery quick --count 100 -n 10 http://your-service-url
   ```
 Esto enviará 100 solicitudes concurrentes a tu URL durante 10 segundos.
+
+### Monitorear recursos en GKE
+Es importante monitorear el uso de recursos como CPU, memoria y red mientras realizas las pruebas de carga.
+
+- Google Cloud Monitoring: GKE se integra con Google Cloud Monitoring (antes conocido como Stackdriver) para ofrecer métricas de rendimiento.
+
+- Kubectl Metrics: Usa kubectl top para obtener métricas de uso de recursos de tus pods:
+
+```bash
+kubectl top pods
+```
+- Prometheus + Grafana: Si necesitas un monitoreo más avanzado, puedes configurar Prometheus y Grafana en tu clúster de Kubernetes. Estas herramientas te proporcionan métricas detalladas sobre el estado de tu aplicación y clúster.
+
+### Escalabilidad de red y latencia
+Además de la CPU y la memoria, es importante monitorear la latencia y el tráfico de red mientras se prueba la carga. Si tu servicio depende de otros microservicios (por ejemplo, backend), monitorear el tráfico y la latencia entre servicios es crucial.
+
+- Istio: Si estás utilizando Istio para la gestión del tráfico, puedes configurarlo para realizar pruebas de latencia y resiliencia.
+- Pingdom o New Relic: Puedes usar servicios externos como Pingdom o New Relic para monitorear la latencia de tus servicios y obtener información sobre la disponibilidad.
+
+### Realizar pruebas de fallos (Chaos Engineering)
+Para evaluar la resiliencia de tu sistema bajo carga, puedes realizar pruebas de caos para simular fallos en la infraestructura.
+
+- Chaos Mesh: Es una herramienta que te permite introducir fallos de red, fallos de nodos, etc., en tu clúster de Kubernetes para probar cómo responde tu aplicación.
+- Gremlin: Otra herramienta para realizar pruebas de caos, que permite inyectar fallos y ver cómo tu sistema maneja situaciones inesperadas.
+  
+### Prueba de escalabilidad manual
+Si prefieres realizar una prueba más sencilla sin herramientas complejas, puedes simplemente escalar manualmente los pods y observar cómo la aplicación maneja el aumento del tráfico. Para hacer esto, puedes usar los siguientes comandos:
+
+Escalar manualmente los pods:
+
+```sh
+kubectl scale deployment frontend --replicas=10
+```
+Para simular más tráfico, aumenta el número de réplicas y verifica si Kubernetes maneja correctamente el aumento de carga.
+
+Luego, revisa el comportamiento de la aplicación y si los pods están siendo gestionados correctamente.
+
+
 
