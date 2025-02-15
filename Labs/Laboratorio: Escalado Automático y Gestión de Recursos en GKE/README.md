@@ -172,6 +172,7 @@ Para ver que versiones de Horizontal Pod Autoscaler están disponibles en el cl�
 kubectl api-versions | grep autoscaling
 
 ```
+Saber la versión permite modificarle en la *apiVersion* del hpa.yaml
 
 1. **Crear un archivo `hpa.yaml`:**
    - Crea un archivo `hpa.yaml`:
@@ -247,6 +248,7 @@ Para instalar en Linux: https://grafana.com/docs/k6/latest/set-up/install-k6/
 
 1. **Monitorear el escalado:**
    - Observa cómo el número de pods aumenta y disminuye en respuesta a la carga:
+     
      Para observar los pods:
      ```sh
         kubectl get pods -w
