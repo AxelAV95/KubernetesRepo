@@ -122,10 +122,11 @@ Desplegar una aplicación que requiere almacenamiento persistente, como una base
 
 ### Paso 4: Crear un Persistent Volume y Persistent Volume Claim
 
-    Antes de crear estos recursos, es necesario crear un disco para persistencia, en este caso:
-    ```sh
-    gcloud compute disks create postgres-disk --size=10GB --zone=[ZONE]
-    ```
+   Antes de crear estos recursos, es necesario crear un disco para persistencia, en este caso:
+    
+   ```sh
+       gcloud compute disks create postgres-disk --size=10GB --zone=[ZONE]
+   ```
 
 1. **Crear un Archivo `pv.yaml`:**
    - Crea un archivo `pv.yaml` para definir un Persistent Volume:
@@ -168,7 +169,7 @@ Desplegar una aplicación que requiere almacenamiento persistente, como una base
 
 ### Paso 5: Desplegar PostgreSQL en GKE
 
-1. **Crear un Archivo `postgres-deployment.yaml`:**
+1. **Crear un archivo `postgres-deployment.yaml`:**
    - Crea un archivo `postgres-deployment.yaml` para desplegar PostgreSQL:
      ```yaml
       apiVersion: apps/v1
