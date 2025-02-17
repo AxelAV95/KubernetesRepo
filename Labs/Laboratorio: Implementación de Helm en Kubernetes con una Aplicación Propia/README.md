@@ -1,5 +1,3 @@
-¡Claro! Aquí tienes un laboratorio completo y detallado para implementar Helm en Kubernetes, utilizando una aplicación propia en un entorno con SO Linux. Este laboratorio te ayudará a demostrar habilidades en la instalación, actualización y gestión de aplicaciones en Kubernetes utilizando Helm.
-
 ### Laboratorio: Implementación de Helm en Kubernetes con una Aplicación Propia
 
 #### Objetivo:
