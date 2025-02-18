@@ -11,13 +11,13 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
 5. Clúster de Kubernetes en GKE.
 6. Sistema operativo Linux.
 
-### Paso 1: Configurar el Entorno de GCP
+### Paso 1: Configurar el entorno de GCP
 
 1. **Crear un Proyecto en GCP:**
    - Accede a la consola de GCP y crea un nuevo proyecto.
    - Anota el ID del proyecto.
 
-2. **Habilitar las APIs Necesarias:**
+2. **Habilitar las APIs necesarias:**
    - Habilita las siguientes APIs en tu proyecto:
      - Kubernetes Engine API
      - Compute Engine API
@@ -33,7 +33,7 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
      gcloud config set project [PROJECT_ID]
      ```
 
-### Paso 2: Crear un Clúster de GKE
+### Paso 2: Crear un clúster de GKE
 
 1. **Crear un Clúster de GKE:**
    - Crea un clúster de GKE con 3 nodos:
@@ -60,16 +60,16 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
      helm repo update
      ```
 
-### Paso 4: Crear una Aplicación Propia
+### Paso 4: Crear una aplicación propia
 
-1. **Crear un Directorio para la Aplicación:**
+1. **Crear un directorio para la aplicación:**
    - Crea un directorio para tu aplicación:
      ```sh
      mkdir my-app
      cd my-app
      ```
 
-2. **Crear un Archivo `Dockerfile`:**
+2. **Crear un archivo `Dockerfile`:**
    - Crea un archivo `Dockerfile`:
      ```Dockerfile
      FROM python:3.8-slim
@@ -79,7 +79,7 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
      CMD ["python", "app.py"]
      ```
 
-3. **Crear un Archivo `app.py`:**
+3. **Crear un archivo `app.py`:**
    - Crea un archivo `app.py`:
      ```python
      from flask import Flask, jsonify
@@ -94,7 +94,7 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
          app.run(host='0.0.0.0', port=5000)
      ```
 
-4. **Construir y Subir la Imagen a Google Container Registry:**
+4. **Construir y subir la imagen a Google Container Registry:**
    - Construye la imagen:
      ```sh
      docker build -t gcr.io/[PROJECT_ID]/my-app:v1 .
@@ -104,15 +104,18 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
      docker push gcr.io/[PROJECT_ID]/my-app:v1
      ```
 
-### Paso 5: Crear un Chart de Helm para la Aplicación
+### Paso 5: Crear un Chart de Helm para la aplicación
 
-1. **Crear la Estructura del Chart de Helm:**
+1. **Crear la estructura del Chart de Helm:**
    - Crea la estructura básica del chart de Helm:
      ```sh
      helm create my-app-chart
      ```
+*Para facilidad de editar estos archivos usando nano, presiona Alt+A, te posicionas al inicio del documento y vas seleccionando hasta    el final, posteriormente, presionar Ctrl+K. Luego copiar lo siguiente:*
 
-2. **Modificar el Archivo `values.yaml`:**
+
+2. **Modificar el archivo `values.yaml`:**
+   
    - Edita el archivo `my-app-chart/values.yaml` para incluir la imagen de tu aplicación:
      ```yaml
      replicaCount: 3
@@ -127,7 +130,9 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
        port: 80
      ```
 
-3. **Modificar el Archivo `deployment.yaml`:**
+4. **Modificar el archivo `deployment.yaml`:**
+
+   
    - Edita el archivo `my-app-chart/templates/deployment.yaml` para asegurarte de que utiliza las variables definidas en `values.yaml`:
      ```yaml
      apiVersion: apps/v1
@@ -153,7 +158,7 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
                  - containerPort: 5000
      ```
 
-4. **Modificar el Archivo `service.yaml`:**
+5. **Modificar el archivo `service.yaml`:**
    - Edita el archivo `my-app-chart/templates/service.yaml` para asegurarte de que utiliza las variables definidas en `values.yaml`:
      ```yaml
      apiVersion: v1
@@ -171,56 +176,59 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
          app: {{ include "my-app-chart.name" . }}
      ```
 
-### Paso 6: Instalar la Aplicación con Helm
+### Paso 6: Instalar la aplicación con Helm
 
-1. **Instalar la Aplicación:**
+1. **Instalar la aplicación:**
+
+   *Nota: Antes de instalar la aplicación el chart de Helm, asegurate de eliminar los archivos de la carpeta template: hpa.yaml, ingress.yaml, serviceaccount.yaml, NOTES.txt*
+   
    - Instala la aplicación utilizando el chart de Helm:
      ```sh
      helm install my-app ./my-app-chart
      ```
 
-2. **Verificar la Instalación:**
+3. **Verificar la instalación:**
    - Verifica que la aplicación se haya instalado correctamente:
      ```sh
      helm list
      ```
    - Deberías ver `my-app` en la lista de aplicaciones instaladas.
 
-### Paso 7: Acceder a la Aplicación
+### Paso 7: Acceder a la aplicación
 
-1. **Obtener la Dirección IP del Servicio:**
+1. **Obtener la dirección IP del servicio:**
    - Obtén la dirección IP externa del servicio de `my-app`:
      ```sh
      kubectl get svc
      ```
    - Anota la dirección IP externa del servicio `my-app`.
 
-2. **Acceder a la Aplicación:**
+2. **Acceder a la aplicación:**
    - Abre un navegador y navega a la dirección IP externa del servicio. Deberías ver el mensaje "Hello from my custom app!".
 
-### Paso 8: Actualizar la Aplicación con Helm
+### Paso 8: Actualizar la aplicación con Helm
 
-1. **Actualizar la Aplicación:**
+1. **Actualizar la aplicación:**
    - Actualiza la aplicación `my-app` para cambiar la imagen a una nueva versión:
      ```sh
      helm upgrade my-app ./my-app-chart --set image.tag=v2
      ```
 
-2. **Verificar la Actualización:**
+2. **Verificar la actualización:**
    - Verifica que la aplicación se haya actualizado correctamente:
      ```sh
      helm list
      ```
 
-### Paso 9: Eliminar la Aplicación con Helm
+### Paso 9: Eliminar la aplicación con Helm
 
-1. **Eliminar la Aplicación:**
+1. **Eliminar la aplicación:**
    - Elimina la aplicación `my-app` instalada con Helm:
      ```sh
      helm uninstall my-app
      ```
 
-2. **Verificar la Eliminación:**
+2. **Verificar la eliminación:**
    - Verifica que la aplicación se haya eliminado correctamente:
      ```sh
      helm list
@@ -228,7 +236,7 @@ Implementar Helm en Kubernetes para gestionar una aplicación propia de manera e
 
 ### Paso 10: Limpieza
 
-1. **Eliminar los Recursos:**
+1. **Eliminar los recursos:**
    - Elimina el clúster de GKE:
      ```sh
      gcloud container clusters delete my-cluster --zone us-central1-a
